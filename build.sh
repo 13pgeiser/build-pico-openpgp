@@ -1,10 +1,15 @@
 #!/bin/bash
 set -ex
-BRANCH="eddsa"  # main or eddsa
-KEY_TYPE="ed25519" # rsa or ed25519
+BRANCH="eddsa" # main or eddsa
+if [ "$BRANCH" == "eddsa" ]; then
+	KEY_TYPE="ed25519" # rsa or ed25519
+else
+	KEY_TYPE="rsa" # rsa or ed25519
+fi
 IDENTITY="pico openpgp<pico@openpgp.me>"
 CERTIFY_PASS="test"
 ADMIN_PASS="12345678"
+PIN_PASS="123456"
 VID_PID="NitroStart" # or "Gnuk"?
 ##############################################
 function do_build {
@@ -69,6 +74,27 @@ $ADMIN_PASS
 save
 EOF
 	gpg -K
+	gpg --export "$KEYFP" >public.gpg
+	rm -rf ~/.gnupg
+	echo "Gnupg folder deleted..."
+	killall gpg-agent || true
+	killall scdaemon || true
+	gpg --list-key
+	gpg -K
+	gpg --import public.gpg
+	rm -f public.gpg
+	gpg --card-status || true
+	sleep 90
+	gpg --card-status
+	echo -e "5\ny\n" | gpg --command-fd 0 --expert --edit-key "$KEYFP" trust
+	gpg-connect-agent "scd serialno" "learn --force" /bye
+	gpg -K
+	rm -f ./hello.*
+	echo "hello" >hello.txt
+	gpg -r pico@openpgp.me -e hello.txt
+	rm -f hello.txt
+	echo "$PIN_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 -d -d hello.txt.gpg
+	rm -f hello.txt.gpg
 }
 ##############################################
 do_build
