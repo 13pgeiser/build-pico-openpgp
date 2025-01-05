@@ -10,7 +10,11 @@ IDENTITY="pico openpgp<pico@openpgp.me>"
 CERTIFY_PASS="test"
 ADMIN_PASS="12345678"
 PIN_PASS="123456"
-VID_PID="NitroStart" # or "Gnuk"?
+VID_PID="Gnuk" # "NitroStart" or "Gnuk"?
+BOARD="pimoroni_tiny2350"
+BOARD_FOLDER="RP2350" # does not work with eddsa yet.
+BOARD="pico"
+BOARD_FOLDER="RPI-RP2"
 ##############################################
 function do_build {
 	sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
@@ -23,7 +27,7 @@ function do_build {
 	# Build
 	mkdir -p pico-build
 	cd pico-build
-	cmake -DPICO_BOARD=pimoroni_tiny2350 -DVIDPID="$VID_PID" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
+	cmake -DPICO_BOARD="$BOARD" -DVIDPID="$VID_PID" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
 	make -j"$(nproc)"
 	cd ..
 }
@@ -33,9 +37,9 @@ function do_flash {
 	if [ ! -e pico-build/flash_nuke.uf2 ]; then
 		curl https://datasheets.raspberrypi.com/soft/flash_nuke.uf2 -o pico-build/flash_nuke.uf2
 	fi
-	cp pico-build/flash_nuke.uf2 "/media/$USER/RP2350/"
+	cp pico-build/flash_nuke.uf2 "/media/$USER/$BOARD_FOLDER/"
 	sleep 22
-	cp pico-build/pico_openpgp.uf2 "/media/$USER/RP2350/"
+	cp pico-build/pico_openpgp.uf2 "/media/$USER/$BOARD_FOLDER/"
 	sleep 8
 }
 ##############################################
@@ -99,4 +103,4 @@ EOF
 ##############################################
 do_build
 do_flash
-do_test
+#do_test
