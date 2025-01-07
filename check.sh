@@ -1,5 +1,7 @@
 #!/bin/bash
 set -ex
-docker run -v "$PWD":/mnt mvdan/shfmt -w /mnt/build.sh
-docker run -e SHELLCHECK_OPTS="" -v "$PWD":/mnt koalaman/shellcheck:stable -x build.sh
-sudo chown $USER build.sh
+for file in *.sh; do
+	docker run -v "$PWD":/mnt mvdan/shfmt -w "/mnt/$file"
+	docker run -e SHELLCHECK_OPTS="" -v "$PWD":/mnt koalaman/shellcheck:stable -x "$file"
+	sudo chown "$USER" "$file"
+done
