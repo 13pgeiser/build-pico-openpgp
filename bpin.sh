@@ -5,13 +5,28 @@ BOARD="$1"
 case "$BOARD" in
 "pico")
 	BOARD_FOLDER="RPI-RP2"
+	NUKE="pico_nuke_pico-1.2.uf2"
 	;;
-"pimoroni_tiny2350" | "pico2")
+"pico2")
 	BOARD_FOLDER="RP2350"
+	NUKE="pico_nuke_pico2-1.2.uf2"
+	;;
+"pimoroni_tiny2350")
+	BOARD_FOLDER="RP2350"
+	NUKE="pico_nuke_pimoroni_tiny2350-1.2.uf2"
 	;;
 *)
 	echo "Unsupported board: *$1*. Use either pico, pico2 or pimoroni_tiny2350"
 	exit 1
+	;;
+esac
+BRANCH="pag" # main, eddsa, pag
+case "$BRANCH" in
+"eddsa" | "pag")
+	KEY_TYPE="ed25519" # rsa or ed25519
+	;;
+*)
+	KEY_TYPE="rsa" # rsa or ed25519
 	;;
 esac
 ### Defaults ###
@@ -23,8 +38,15 @@ PIN_PASS="123456"
 function do_build {
 	sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
 	rm -rf ./pico-*
-	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
-	git clone https://github.com/polhenarejos/pico-openpgp.git --branch main --recurse-submodules
+	case "$BRANCH" in
+	"eddsa" | "pag")
+		git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.0.0 --recurse-submodules
+		;;
+	*)
+		git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
+		;;
+	esac
+	git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 	mkdir -p pico-build
 	cd pico-build
 	cmake -DPICO_BOARD="$BOARD" -DVIDPID="Gnuk" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
@@ -41,7 +63,7 @@ function wait_for_card_status {
 ### Erase memory first, then copy ###
 function do_flash {
 	if [ ! -e pico-build/flash_nuke.uf2 ]; then
-		curl https://datasheets.raspberrypi.com/soft/flash_nuke.uf2 -o pico-build/flash_nuke.uf2
+		curl -L "https://github.com/polhenarejos/pico-nuke/releases/download/v1.2/$NUKE"-o pico-build/flash_nuke.uf2
 	fi
 	cp pico-build/flash_nuke.uf2 "/media/$USER/$BOARD_FOLDER/"
 	sleep 2
@@ -55,11 +77,11 @@ function do_flash {
 function do_test {
 	# !!! WARNING deletes actual gnupg installation!!!
 	rm -rf ~/.gnupg
-	echo "$CERTIFY_PASS" | gpg --batch --passphrase-fd 0 --quick-generate-key "$IDENTITY" rsa cert never
+	echo "$CERTIFY_PASS" | gpg --batch --passphrase-fd 0 --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
 	KEYFP=$(gpg -k --with-colons "$IDENTITY" | awk -F: '/^fpr:/ { print $10; exit }')
-	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" rsa sign 1y
-	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" rsa encr 1y
-	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" rsa auth 1y
+	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" "$KEY_TYPE" sign 1y
+	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" "${KEY_TYPE//ed/cv}" encr 1y
+	echo "$CERTIFY_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 --quick-add-key "$KEYFP" "$KEY_TYPE" auth 1y
 	gpg -K
 	# Put key on card
 	KEYID=$(gpg -k --with-colons "$IDENTITY" | awk -F: '/^pub:/ { print $5; exit }')
