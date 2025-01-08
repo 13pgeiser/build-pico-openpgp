@@ -63,7 +63,7 @@ function wait_for_card_status {
 ### Erase memory first, then copy ###
 function do_flash {
 	if [ ! -e pico-build/flash_nuke.uf2 ]; then
-		curl -L "https://github.com/polhenarejos/pico-nuke/releases/download/v1.2/$NUKE"-o pico-build/flash_nuke.uf2
+		curl -L "https://github.com/polhenarejos/pico-nuke/releases/download/v1.2/$NUKE" -o pico-build/flash_nuke.uf2
 	fi
 	cp pico-build/flash_nuke.uf2 "/media/$USER/$BOARD_FOLDER/"
 	sleep 2
