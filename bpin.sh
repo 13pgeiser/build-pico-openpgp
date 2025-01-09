@@ -49,7 +49,7 @@ function do_build {
 	git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 	mkdir -p pico-build
 	cd pico-build
-	cmake -DPICO_BOARD="$BOARD" -DVIDPID="Gnuk" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
+	cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
 	make -j"$(nproc)"
 	cd ..
 }
