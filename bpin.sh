@@ -75,6 +75,10 @@ function do_flash {
 }
 ### Create new keys, send them to the card, change pin and try to decrypt.
 function do_test {
+	if gpg --card-status | grep Yubico; then
+		echo "Yubikey found. Aborting"
+		exit 1
+	fi
 	# !!! WARNING deletes actual gnupg installation!!!
 	rm -rf ~/.gnupg
 	echo "$CERTIFY_PASS" | gpg --batch --passphrase-fd 0 --quick-generate-key "$IDENTITY" "$KEY_TYPE" cert never
