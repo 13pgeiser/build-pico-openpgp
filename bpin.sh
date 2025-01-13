@@ -38,14 +38,7 @@ PIN_PASS="123456"
 function do_build {
 	sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
 	rm -rf ./pico-*
-	case "$BRANCH" in
-	"eddsa" | "pag")
-		git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.0.0 --recurse-submodules
-		;;
-	*)
-		git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
-		;;
-	esac
+	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
 	git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 	mkdir -p pico-build
 	cd pico-build
