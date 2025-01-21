@@ -16,7 +16,7 @@ case "$BOARD" in
 	NUKE="pico_nuke_pimoroni_tiny2350-1.2.uf2"
 	;;
 *)
-	echo "Unsupported board: *$1*. Use either pico, pico2 or pimoroni_tiny2350"
+	echo "Unsupported board: *$1*. Use either pico pico2 or pimoroni_tiny2350"
 	exit 1
 	;;
 esac
@@ -36,7 +36,7 @@ ADMIN_PASS="12345678"
 PIN_PASS="123456"
 ### Remove pico-* folders, clone and build
 function do_build {
-	sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
+	#sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
 	rm -rf ./pico-*
 	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
 	git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
@@ -133,6 +133,11 @@ EOF
 	echo "$PIN_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 -d -d hello.txt.gpg
 	rm -f hello.txt.gpg
 }
-do_build
-do_flash
-do_test
+echo $2
+if [ -n "$2" ]; then
+	do_$2
+else
+	for step in build flash test; do
+		do_$step
+	done
+fi
