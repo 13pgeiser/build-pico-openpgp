@@ -1,0 +1,3 @@
+# Just call docker_build.sh
+bash ./docker_build.sh
+directory_upload release
