@@ -20,7 +20,7 @@ case "$BOARD" in
 	exit 1
 	;;
 esac
-BRANCH="pag" # main, eddsa, pag
+BRANCH="eddsa" # main, eddsa, pag
 case "$BRANCH" in
 "eddsa" | "pag")
 	KEY_TYPE="ed25519" # rsa or ed25519
@@ -39,7 +39,8 @@ PIN_PASS="123456"
 function do_checkout {
 	rm -rf ./pico-*
 	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
-	git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
+	#git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
+	git clone https://github.com/polhenarejos/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 }
 ### build
 function do_build {
