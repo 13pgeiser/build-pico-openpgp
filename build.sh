@@ -5,18 +5,22 @@ BOARD="$1"
 case "$BOARD" in
 "pico")
 	BOARD_FOLDER="RPI-RP2"
-	NUKE="pico_nuke_pico-1.2.uf2"
+	NUKE="pico_nuke_pico-1.4.uf2"
 	;;
 "pico2")
 	BOARD_FOLDER="RP2350"
-	NUKE="pico_nuke_pico2-1.2.uf2"
+	NUKE="pico_nuke_pico2-1.4.uf2"
 	;;
 "pimoroni_tiny2350")
 	BOARD_FOLDER="RP2350"
-	NUKE="pico_nuke_pimoroni_tiny2350-1.2.uf2"
+	NUKE="pico_nuke_pimoroni_tiny2350-1.4.uf2"
+	;;
+"seeed_xiao_rp2350")
+	BOARD_FOLDER="RP2350"
+	NUKE="pico_nuke_seeed_xiao_rp2350-1.4.uf2"
 	;;
 *)
-	echo "Unsupported board: *$1*. Use either pico pico2 or pimoroni_tiny2350"
+	echo "Unsupported board: *$1*. Use either pico pico2, pimoroni_tiny2350, seeed_xiao_rp2350"
 	exit 1
 	;;
 esac
@@ -51,7 +55,7 @@ function do_build {
 	make -j"$(nproc)"
 	cd ..
 	if [ ! -e pico-build-"$BOARD"/flash_nuke.uf2 ]; then
-		curl -L "https://github.com/polhenarejos/pico-nuke/releases/download/v1.2/$NUKE" -o pico-build-"$BOARD"/flash_nuke.uf2
+		curl -L "https://github.com/polhenarejos/pico-nuke/releases/download/v1.4/$NUKE" -o pico-build-"$BOARD"/flash_nuke.uf2
 	fi
 }
 ### Wait for the card to reply correctly. ###
