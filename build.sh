@@ -24,15 +24,10 @@ case "$BOARD" in
 	exit 1
 	;;
 esac
-BRANCH="eddsa" # main, eddsa, pag
-case "$BRANCH" in
-"eddsa" | "pag")
-	KEY_TYPE="ed25519" # rsa or ed25519
-	;;
-*)
-	KEY_TYPE="rsa" # rsa or ed25519
-	;;
-esac
+
+BRANCH="main"
+KEY_TYPE="ed25519" # rsa or ed25519
+
 ### Defaults ###
 IDENTITY="pico openpgp<pico@openpgp.me>"
 CERTIFY_PASS="test"
@@ -43,7 +38,6 @@ PIN_PASS="123456"
 function do_checkout {
 	rm -rf ./pico-*
 	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
-	#git clone https://github.com/13pgeiser/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 	git clone https://github.com/polhenarejos/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 }
 ### build
@@ -51,7 +45,7 @@ function do_build {
 	#sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
 	mkdir -p pico-build-"$BOARD"
 	cd pico-build-"$BOARD"
-	cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp
+	cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp -DENABLE_EDDSA=1
 	make -j"$(nproc)"
 	cd ..
 	if [ ! -e pico-build-"$BOARD"/flash_nuke.uf2 ]; then
