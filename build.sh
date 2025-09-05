@@ -37,15 +37,16 @@ PIN_PASS="123456"
 ### Remove pico-* folders, clone and build
 function do_checkout {
 	rm -rf ./pico-*
-	git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
+	#git clone https://github.com/raspberrypi/pico-sdk.git --branch 2.1.0 --recurse-submodules
+	git clone https://github.com/raspberrypi/pico-sdk.git --recurse-submodules
 	git clone https://github.com/polhenarejos/pico-openpgp.git --branch "$BRANCH" --recurse-submodules
 }
 ### build
 function do_build {
-	#sudo apt install -y cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib opensc gnupg pcsc-tools
+	cat pico-openpgp/pico-keys-sdk/pico_keys_sdk_import.cmake | grep 'pico_sdk_init()' || sed -i '1s/^/pico_sdk_init()\n/' pico-openpgp/pico-keys-sdk/pico_keys_sdk_import.cmake
 	mkdir -p pico-build-"$BOARD"
 	cd pico-build-"$BOARD"
-	cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DPICO_SDK_PATH="../pico-sdk/" ../pico-openpgp -DENABLE_EDDSA=1
+	PICO_SDK_PATH="../pico-sdk/" cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DENABLE_DELAYED_BOOT=1 -DENABLE_EMULATION=0 -DENABLE_EDDSA=1 ../pico-openpgp
 	make -j"$(nproc)"
 	cd ..
 	if [ ! -e pico-build-"$BOARD"/flash_nuke.uf2 ]; then
@@ -146,9 +147,8 @@ EOF
 	echo "$PIN_PASS" | gpg --batch --pinentry-mode=loopback --passphrase-fd 0 -d -d hello.txt.gpg
 	rm -f hello.txt.gpg
 }
-echo $2
 if [ -n "$2" ]; then
-	do_$2 "$1"
+	do_"$2" "$1"
 else
 	for step in checkout build flash test; do
 		do_$step "$1"

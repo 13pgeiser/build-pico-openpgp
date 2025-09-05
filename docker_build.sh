@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 docker rm -f pico_opengpg || true
-cat ./scripts/Dockerfile.bookworm | docker build -t pico_opengpg -
+cat ./scripts/Dockerfile | docker build -t pico_opengpg -
 docker run -d --name pico_opengpg pico_opengpg sleep 86400 # 24 hours...
 docker cp ./build.sh pico_opengpg:/build.sh
 docker exec -t pico_opengpg bash /build.sh pico checkout
