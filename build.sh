@@ -43,7 +43,7 @@ function do_checkout {
 }
 ### build
 function do_build {
-	cat pico-openpgp/pico-keys-sdk/pico_keys_sdk_import.cmake | grep 'pico_sdk_init()' || sed -i '1s/^/pico_sdk_init()\n/' pico-openpgp/pico-keys-sdk/pico_keys_sdk_import.cmake
+	cat pico-openpgp/pico-keys-sdk/picokeys_sdk_import.cmake | grep 'pico_sdk_init()' || sed -i '1s/^/pico_sdk_init()\n/' pico-openpgp/pico-keys-sdk/picokeys_sdk_import.cmake
 	mkdir -p pico-build-"$BOARD"
 	cd pico-build-"$BOARD"
 	PICO_SDK_PATH="../pico-sdk/" cmake -DPICO_BOARD="$BOARD" -DVIDPID="NitroPro" -DENABLE_DELAYED_BOOT=1 -DENABLE_EMULATION=0 -DENABLE_EDDSA=1 ../pico-openpgp
